@@ -1,5 +1,5 @@
 -- =========================================================
--- Portfolio Project: Motor Vehicle Collisions Data Cleaning
+-- Project: Motor Vehicle Collisions Data Cleaning
 -- Description: Cleans and standardizes raw NYC crash data
 -- Assumptions:
 --   • Script assumes a raw, unmodified dataset
