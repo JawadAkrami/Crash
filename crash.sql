@@ -41,14 +41,17 @@ SELECT
 FROM mvc_crash;
 -- Result: 1048575 rows
 
-SELECT COUNT(*) 
+SELECT 
+	COUNT(*) 
 FROM mvc_crash 
 WHERE BOROUGH = '' 
 	OR BOROUGH IS NULL;
 -- Result: 367866 rows
 
 -- Check for duplicate records using COLLISION_ID
-SELECT COLLISION_ID, COUNT(COLLISION_ID)
+SELECT 
+	COLLISION_ID, 
+    COUNT(COLLISION_ID)
 FROM mvc_crash
 GROUP BY COLLISION_ID
 HAVING COUNT(*) > 1;
@@ -145,7 +148,9 @@ They were converted to proper DATE and TIME types to support validation and anal
 -- ===========================================================================================================================
 
 -- BOROUGH column
-SELECT borough, COUNT(*)
+SELECT 
+	borough, 
+    COUNT(*)
 FROM mvc_crash
 GROUP BY borough
 HAVING COUNT(*) >1;
@@ -159,7 +164,8 @@ FROM mvc_crash;
 -- Both columns have missing values. We keep them since they contain fewer than 35 rows.
 
 -- column ON STREET NAME has over 265000 null values
-SELECT COUNT(*)
+SELECT 
+	COUNT(*)
 FROM mvc_crash
 WHERE `ON STREET NAME` IS NULL
    OR TRIM(`ON STREET NAME`) = '';
