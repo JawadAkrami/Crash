@@ -12,11 +12,12 @@
 -- ===============================================================================================================================
 -- 														Introduction 
 -- ===============================================================================================================================
-
--- Dataset: It contains information from all police reported motor vehicle collisions in NYC.
--- Data collected from 2012 to 2025. Data from Year 2015 is missing.
--- Rows: 1048575 
--- Columns: 29
+/*
+Dataset: It contains information from all police reported motor vehicle collisions in NYC.
+Data collected from 2012 to 2025. Data from Year 2015 is missing.
+Rows: 1048575 
+Columns: 29
+*/
 
 SELECT
   table_name AS mvc_crash,
@@ -79,23 +80,17 @@ FROM mvc_crash;
 SELECT 
 	`NUMBER OF PERSONS INJURED`, 
     COUNT(*) AS freq
-FROM 
-	mvc_crash
-GROUP BY 
-	`NUMBER OF PERSONS INJURED` 
-ORDER BY 
-	`NUMBER OF PERSONS INJURED` DESC;
+FROM mvc_crash
+GROUP BY `NUMBER OF PERSONS INJURED` 
+ORDER BY `NUMBER OF PERSONS INJURED` DESC;
 
 
 SELECT 
 	`NUMBER OF MOTORIST INJURED`, 
     COUNT(*) AS freq
-FROM 
-	mvc_crash
-GROUP BY 
-	`NUMBER OF MOTORIST INJURED`
-ORDER BY 
-	`NUMBER OF MOTORIST INJURED` DESC;
+FROM mvc_crash
+GROUP BY `NUMBER OF MOTORIST INJURED`
+ORDER BY `NUMBER OF MOTORIST INJURED` DESC;
 
 -- Extreme injury counts were retained, as they represent valid
 -- high-severity crash events rather than data quality issues.
@@ -104,20 +99,20 @@ ORDER BY
 SELECT
 	MIN(`crash date`) AS min_date,
     MAX(`crash date`) AS max_date
-FROM
-	mvc_crash;
+FROM mvc_crash;
     
 SELECT 
 	COUNT(*) 
-FROM 
-	mvc_crash
-WHERE 
-	`crash date` IS NULL;
--- Crash dates fall within the expected range (2018-01-01 to 2023-09-09)
--- No NULL values were detected in the crash date column
+FROM mvc_crash
+WHERE `crash date` IS NULL;
+/*
+Crash dates fall within the expected range (2018-01-01 to 2023-09-09).
+No NULL values were detected in the crash date column.
+*/
 
 -- Check for future-dated records
-SELECT COUNT(*)
+SELECT 
+	COUNT(*)
 FROM mvc_crash
 WHERE `crash date` > CURDATE();
 -- No future-dated records detected
@@ -128,7 +123,6 @@ WHERE `crash date` > CURDATE();
 -- ===========================================================================================================================
 
 -- Converting Date and Time data type
-
 UPDATE mvc_crash 
 SET `crash date` = STR_TO_DATE(`crash date`, '%m/%d/%Y'); 
 
@@ -141,9 +135,10 @@ WHERE `crash time` IS NOT NULL;
 
 ALTER TABLE mvc_crash MODIFY `crash time` TIME;
 
--- CRASH DATE and CRASH TIME, stored as text.
--- were converted to proper DATE and TIME types to support validation and analysis.
-
+/*
+CRASH DATE and CRASH TIME, stored as text.
+They were converted to proper DATE and TIME types to support validation and analysis.
+*/
 
 -- ===========================================================================================================================
 -- 													3 Handle Missing Data
@@ -168,19 +163,23 @@ SELECT COUNT(*)
 FROM mvc_crash
 WHERE `ON STREET NAME` IS NULL
    OR TRIM(`ON STREET NAME`) = '';
--- This column is kept because our analysis focused on street-level and borough-level trends.
--- It is retained as the primary location identifier to preserve analytical value.
+/*
+This column is kept because our analysis focused on street-level and borough-level trends.
+It is retained as the primary location identifier to preserve analytical value.
+*/
 
 -- Columns: OFF STREET NAME AND CROSS STREET NAME have over 544000 and 783000 null values respectively
-SELECT COUNT(*)
+SELECT 
+	COUNT(*)
 FROM mvc_crash
 WHERE `CROSS STREET NAME` IS NULL
-OR TRIM(`CROSS STREET NAME`) = '';
+	OR TRIM(`CROSS STREET NAME`) = '';
 
-SELECT COUNT(*)
+SELECT 
+	COUNT(*)
 FROM mvc_crash
 WHERE `OFF STREET NAME` IS NULL
-OR TRIM(`OFF STREET NAME`) = '';
+	OR TRIM(`OFF STREET NAME`) = '';
 
 -- Dropping column with high null values. 
 ALTER TABLE mvc_crash
@@ -193,10 +192,12 @@ DROP COLUMN `CONTRIBUTING FACTOR VEHICLE 5`,
 DROP COLUMN `VEHICLE TYPE CODE 3`,
 DROP COLUMN `VEHICLE TYPE CODE 4`,
 DROP COLUMN `VEHICLE TYPE CODE 5`;
--- Both CROSS/OFF STREET NAME columns were removed due to high sparsity and being outside our analysis scope.
--- Location column is the combination of LONGITUDE and LATITUDE columns
--- The rest of columns were removed due to containing over 96% null values. Thus, they provide limited analytical value.
-
+/* 
+Both CROSS/OFF STREET NAME columns were removed due to high sparsity and being outside 
+our analysis scope. Location column is the combination of LONGITUDE and LATITUDE columns.
+The rest of columns were removed due to containing over 96% null values. Thus, they provide 
+limited analytical value.
+*/
 
 
 -- ===========================================================================================================================
@@ -208,8 +209,9 @@ SELECT
 	COUNT(*) AS count_rows, 
     COUNT(DISTINCT collision_id) AS distinct_rows
 FROM mvc_crash;
--- The number of total rows equals the number of distinct IDs. Therefore, there are 0 duplicates. 
-
+/* 
+The number of total rows equals the number of distinct IDs. Therefore, there are 0 duplicates. 
+*/
 
 -- ===========================================================================================================================
 -- 												5 Normalize & Standardize Values
@@ -280,8 +282,10 @@ SET contributing_factor_vehicle_2 = NULL
 WHERE contributing_factor_vehicle_2 IS NOT NULL
 	AND TRIM(contributing_factor_vehicle_2) = '';
     
--- Empty strings and whitespace values were converted to NULL to standardize missing data representation 
--- and ensure accurate aggregation, filtering, and joins during analysis
+/* 
+Empty strings and whitespace values were converted to NULL to standardize missing data 
+representation and ensure accurate aggregation, filtering, and joins during analysis
+*/
 
 ALTER TABLE mvc_crash MODIFY COLUMN collision_id int FIRST;
 -- Move collision_id to first position
@@ -298,25 +302,29 @@ ALTER TABLE mvc_crash ADD PRIMARY KEY (collision_id);
 ALTER TABLE mvc_crash
 ADD CONSTRAINT chk_persons_injured_non_negative
 CHECK (number_of_persons_injured >= 0);
--- CHECK constraints are applied only where supported by MySQL.
--- Date-based constraints using CURRENT_DATE cannot be enforced because MySQL does not support it.
-
+/*
+CHECK constraints are applied only where supported by MySQL.
+Date-based constraints using CURRENT_DATE cannot be enforced because MySQL does not support it.
+*/
 
 
 -- ===========================================================================================================================
 -- 														Conclusion
 -- ===========================================================================================================================
--- After systematically cleaning the dataset, the following modifications occurred across rows, columns, and memory usage.
+/* 
+After systematically cleaning the dataset, the following modifications occurred across rows, columns, and memory usage.
+*/
 
--- 		 		Before    After
--- Rows: 		1048575	  1048575 
+/*
+			Before    After
+Rows: 		1048575	  1048575 
 		
--- 				Before 	  After
--- Columns:  	29		  20	
+			Before 	  After
+Columns:  	29		  20	
 		
--- 				Before	  After
--- Memory Usage:274		  256 MB
-
+			Before	  After
+Memory Usage:274		  256 MB
+*/
 
 
 
